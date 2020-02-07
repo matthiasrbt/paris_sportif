@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">Equipe domicile</th>
+            <th class="text-center" colspan="3" scope="col">Score</th>
+            <th class="text-right" scope="col">Equipe extérieur</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for match in matchs %}
+        <tr>
+            <td>{{ match.teamDom.name }}</td>
+            <td class="text-center">{{ match.scoreDom }}</td>
+            <td class="text-center">-</td>
+            <td class="text-center">{{ match.scoreExt }}</td>
+            <td class="text-right">{{ match.teamExt.name }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

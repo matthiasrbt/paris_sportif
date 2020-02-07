@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+    <h1 class="h3 mb-3 font-weight-normal">Mes paris en cours</h1>
+    <ul>
+        {% for bet in bets_encours %}
+            <li class="list-group-item list-group-item-secondary">Match : {{ bet.match.teamDom.name }} - {{ bet.match.teamExt.name }}
+            {% if bet.result == 0 %}
+                <p>Résultat du match : Match nul </p>
+            {% elseif bet.result == 1 %}
+                <p>Résultat du match : {{ bet.match.teamDom.name }} </p>
+            {% elseif bet.result == 2 %}
+                <p>Résultat du match : {{ bet.match.teamExt.name }} </p>
+            {% endif %}
+            </li>
+            <br>
+        {% endfor %}
+    </ul>
+    <h1 class="h3 mb-3 font-weight-normal">Mes paris résultat</h1>
+    <ul>
+    {% for bet in bets_resultat %}
+        <li class="list-group-item list-group-item-secondary">Match : {{ bet.match.teamDom.name }} - {{ bet.match.teamExt.name }}
+            {% if bet.result == 0 %}
+                <p>Résultat du match : Match nul </p>
+            {% elseif bet.result == 1 %}
+                <p>Résultat du match : {{ bet.match.teamDom.name }} </p>
+            {% elseif bet.result == 2 %}
+                <p>Résultat du match : {{ bet.match.teamExt.name }} </p>
+            {% endif %}
+        </li>
+        <br>
+    {% endfor %}
+    </ul>
+{% endblock %}

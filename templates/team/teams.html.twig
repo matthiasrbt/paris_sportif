@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block navTeams %}
+    <a class="nav-item nav-link active" href="{{ path('teams') }}">Equipes</a>
+{% endblock %}
+
+{% block body %}
+
+    <div class="list-group">
+        {% for team in teams %}
+            <a href="" class="list-group-item list-group-item-action">{{ team.id }} {{ team.name }} - {{ team.points }}</a>
+        {% endfor %}
+
+    </div>
+
+{% endblock %}

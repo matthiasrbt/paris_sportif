@@ -1,0 +1,39 @@
+#index:
+#    path: /
+#    controller: App\Controller\DefaultController::index
+
+index:
+  path: /
+  controller: App\Controller\DefaultController::index
+
+login:
+  path: /login
+  controller: App\Controller\SecurityController::login
+
+logout:
+  path: /logout
+  controller: App\Controller\SecurityController::logout
+
+register:
+  path: /register
+  controller: App\Controller\SecurityController::register
+
+teams:
+  path: /teams
+  controller: App\Controller\TeamController::teamsList
+
+matchs:
+  path: /matchs
+  controller: App\Controller\MatchController::matchsList
+
+paris:
+  path: /paris
+  controller: App\Controller\BetController::parisList
+
+parier:
+  path: /match/{id}/parier
+  controller: App\Controller\BetController::toBet
+
+mesparis:
+  path: /user/paris
+  controller: App\Controller\BetController::mesParis

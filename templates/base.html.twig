@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Paris sportifs{% endblock %}</title>
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app')}}
+    {% endblock %}
+    <style>
+        body {
+            padding-bottom: 20px;
+        }
+
+        .navbar {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="{{  path('index') }}">Paris sportifs</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            {% block navTeams %}
+                <li class="nav-item"><a class="nav-link" href="{{ path('teams') }}">Equipes</a></li>
+            {% endblock %}
+            {% block navMatchs %}
+                <li class="nav-item"><a class="nav-link" href="{{ path('matchs') }}">Résultats</a></li>
+            {% endblock %}
+            {% block navLivres %}
+                <li class="nav-item"><a class="nav-link" href="{{ path('paris') }}">Parier</a></li>
+            {% endblock %}
+            {% block navAuteurs %}
+                <li class="nav-item"><a class="nav-link" href="{{ path('mesparis') }}">Mes paris</a></li>
+            {% endblock %}
+            {% block navExemplaires %}
+                <li class="nav-item"><a class="nav-link" href="#">Exemplaires</a></li>
+            {% endblock %}
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                <li class="nav-item"><a class="nav-link" href="{{ path('logout') }}">Se déconnecter</a></li>
+            </ul>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Bonjour, {{ app.user.firstName }} {{ app.user.name }}
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="#">Informations</a>
+                    <a class="dropdown-item" href="">Paramètres</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Se déconnecter</a>
+                </div>
+            </div>
+
+            {% else %}
+                <li class="nav-item"><a class="nav-link" href="{{ path('login') }}">Se connecter</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ path('register') }}">S'inscrire</a></li>
+                </ul>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+
+{% block body %}{% endblock %}
+
+{% block javascripts %}
+
+    {{ encore_entry_script_tags('app') }}
+
+    <!-- Renders app.js & a webpack runtime.js file
+        <script src="/build/runtime.js"></script>
+        <script src="/build/app.js"></script> -->
+{% endblock %}
+
+</body>
+</html>
