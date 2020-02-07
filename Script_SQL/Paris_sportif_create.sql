@@ -21,6 +21,7 @@ CREATE TABLE public."match" (
 	id_dom int4 NOT NULL,
 	id_ext int4 NOT NULL,
 	datetime timestamptz NULL,
+	result int4 NULL,
 	CONSTRAINT match_pk PRIMARY KEY (idmatch),
 	CONSTRAINT match_fk FOREIGN KEY (id_dom) REFERENCES team(idteam),
 	CONSTRAINT match_fk_1 FOREIGN KEY (id_ext) REFERENCES team(idteam)
