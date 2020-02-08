@@ -23,7 +23,6 @@ class BetController extends AbstractController
         $listematchs = array();
         foreach ($matchs as $match){
             if($match->getDateTime() >= new \DateTime()){
-                dump(new \DateTime());
                 $listematchs[] = $match;
             }
         }
@@ -40,18 +39,23 @@ class BetController extends AbstractController
         if($user != null){
             if(isset($_POST['result']) AND $_POST['result'] >= 0 AND $_POST['result'] <= 2){
                 $result = $_POST['result'];
+                if($match->getDateTime() >= new \DateTime()){
+                    $bet = new Bet();
+                    $bet->setUser($user);
+                    $bet->setMatch($match);
+                    $bet->setResult($result);
+                    $bet->setBetDatetime(new \DateTime());
 
-                $bet = new Bet();
-                $bet->setUser($user);
-                $bet->setMatch($match);
-                $bet->setResult($result);
-                $bet->setBetDatetime(new \DateTime());
+                    $entityManager->persist($bet); //stocké en mémoire dans la collection de livres
+                    $entityManager->flush(); // synchronisation avec la BDD -> production d'un ordre SQL de type INSERT
 
-                $entityManager->persist($bet); //stocké en mémoire dans la collection de livres
-                $entityManager->flush(); // synchronisation avec la BDD -> production d'un ordre SQL de type INSERT
-
-                $this->addFlash('success', 'Le paris a bien été enregistré');
-                return $this->redirectToRoute('paris');
+                    $this->addFlash('success', 'Le paris a bien été enregistré');
+                    return $this->redirectToRoute('paris');
+                }
+                else{
+                    $this->addFlash('warning', 'Le match a déjà commencé !');
+                    return $this->redirectToRoute('paris');
+                }
             }
             else{
                 $this->addFlash('warning', 'Paris non valide !');
@@ -68,27 +72,37 @@ class BetController extends AbstractController
             $iduser = $user->getId();
             return $iduser;
         }
+        else{
+            return false;
+        }
     }
     public function mesParis(){
-        $iduser = $this->checkConnexion();
-        if($iduser != null){
-            $myBets = $this->getDoctrine()->getRepository(Bet::class)->findAll();
+        if($this->checkConnexion() != false){
+            $iduser = $this->checkConnexion();
+            $bets = $this->getDoctrine()->getRepository(Bet::class)->findAll();
             $listBetWaiting = array();
-            $listBetFinished = array();
-            foreach ($myBets as $myBet){
-                if($myBet->getUser()->getId() == $iduser) {
-                    if($myBet->getBetDateTime() <= $myBet->getMatch()->getDateTime()) {
-                        $listBetWaiting[] = $myBet;
+            $listBetWin = array();
+            $listBetLose = array();
+            foreach ($bets as $bet){
+                if($bet->getUser()->getId() == $iduser) {
+                    //$bet->getBetDateTime() <= $bet->getMatch()->getDateTime()
+                    if($bet->getMatch()->getDateTime() >= new \DateTime()) {
+                        $listBetWaiting[] = $bet;
                     }
                     else {
-                        $listBetFinished[] = $myBet;
+                        if($bet->getResult() === $bet->getMatch()->getResult()){
+                            $listBetWin[] = $bet;
+                        }
+                        else{
+                            $listBetLose[] = $bet;
+                        }
                     }
                 }
             }
             if(empty($listBetWaiting) AND empty($listBetFinished)){
                 $this->addFlash('error', 'Vous n\'avez effectué aucun paris !');
             }
-            return $this->render('bet/mesParis.html.twig', ['bets_encours'=> $listBetWaiting, 'bets_resultat'=>$listBetFinished]);
+            return $this->render('bet/mesParis.html.twig', ['bets_encours'=> $listBetWaiting, 'bets_win'=>$listBetWin, 'bets_lose'=>$listBetLose]);
         }
         else{
             return $this->redirectToRoute('login');
