@@ -44,59 +44,124 @@ class BetController extends AbstractController
             return $myBets;
         }
     }
-    /*public function parisList(){
+    public function matchIsNotOver(){
         $matchs = $this->getDoctrine()->getRepository(Match::class)->findAll();
-        $listematchs = array();
-        foreach ($matchs as $match){ //Pour chaque match
-            if($match->getDateTime() >= new \DateTime()){ //On vérifie que la DATE et HEURE du MATCH ne soit pas dépassée
-                if($this->checkConnexion() != false){
-                    $iduser = $this->checkConnexion();
-                    if($iduser )
-                }
-                $listematchs[] = $match;
+        $matchsAVenir = array();
+        foreach ($matchs as $match) {
+            if ($match->getDateTime() >= new \DateTime()) { //On vérifie que la DATE et HEURE du MATCH ne soit pas dépassée
+                $matchsAVenir[] = $match;
             }
         }
-        if(empty($listematchs)){
-            $this->addFlash('error', 'Aucun match n\'est disponible !');
+        if(empty($matchsAVenir)){
+            return false;
         }
-        return $this->render('bet/formBet.html.twig', ['matchs'=> $listematchs]);
-    }*/
+        else{
+            return $matchsAVenir;
+        }
+    }
     public function parisList()
     {
-        $matchs = $this->getDoctrine()->getRepository(Match::class)->findAll();
         $listematchs = array();
         if ($this->checkConnexion() != false) { //Si l'utilisateur est connecté
             $myBets = $this->checkMyBets();
-            foreach ($matchs as $match) { //Pour chaque match
-                if ($match->getDateTime() >= new \DateTime()) { //On vérifie que la DATE et HEURE du MATCH ne soit pas dépassée
+            if($this->matchIsNotOver() != false){
+                $lesMatchsAVenir = $this->matchIsNotOver();
+                foreach ($lesMatchsAVenir as $matchAVenir) { //Pour chaque match à venir
                     $i =0;
                     if (!empty($myBets)) { //On vérifie que l'utilisateur a déjà parié
                         $nbBet = 0;
                         foreach ($myBets as $myBet) { //Pour chaque paris
-                            if ($match->getId() == $myBet->getMatch()->getId()) { //Si l'utilisateur a pas déjà parié sur ce match
+                            if ($matchAVenir->getId() == $myBet->getMatch()->getId()) { //Si l'utilisateur a pas déjà parié sur ce match
                                 $nbBet++;
                             }
                         }
                         if ($nbBet == 0) { //Si l'utilisateur n'a jamais parié sur ce match
-                            $listematchs[] = $match;
+                            $listematchs[] = $matchAVenir;
                         }
                         $i ++;
                     }
                     if($i == 0){ //Si le match n'a pas été encore ajouté
-                        $listematchs[] = $match;
+                        $listematchs[] = $matchAVenir;
                     }
                 }
-            }
-        } else { //Si l'utilisateur n'est pas connecté
-            foreach ($matchs as $match) { //Pour chaque match
-                if ($match->getDateTime() >= new \DateTime()) { //On vérifie que la DATE et HEURE du MATCH ne soit pas dépassée
-                    $listematchs[] = $match;
+                if(empty($listematchs)){
+                    $this->addFlash('warning', 'Aucun match n\'est disponible !');
                 }
+            }
+            else{
+                $this->addFlash('warning', 'Aucun match n\'est disponible !');
+            }
+        }
+        else { //Si l'utilisateur n'est pas connecté
+            if($this->matchIsNotOver() != false) {
+                $lesMatchsAVenir = $this->matchIsNotOver();
+                foreach ($lesMatchsAVenir as $matchAVenir) { //Pour chaque match à venir
+                    $listematchs[] = $matchAVenir;
+                }
+            }
+            else{
+                $this->addFlash('warning', 'Aucun match n\'est disponible !');
             }
         }
         return $this->render('bet/formBet.html.twig', ['matchs' => $listematchs]);
     }
     public function toBet($id,Request $request){
+        $entityManager = $this->getDoctrine()->getManager();
+        $match = $this->getDoctrine()->getRepository(Match::class)->find($id);
+        $user = $this->getUser();
+        if ($this->checkConnexion() != false){
+            if(isset($_POST['result']) OR $_POST['result'] >= 0 AND $_POST['result'] <= 2){
+                $result = $_POST['result'];
+                if($match->getDateTime() >= new \DateTime()){
+                    if($this->checkMyBets() != false){
+                        $myBets = $this->checkMyBets();
+                        $nbBet = 0;
+                        foreach($myBets as $myBet){
+                            if($myBet->getMatch()->getId() == $match->getId()){
+                                $nbBet ++;
+                            }
+                        }
+                        if($nbBet == 0){
+                            $bet = new Bet();
+                            $bet->setUser($user);
+                            $bet->setMatch($match);
+                            $bet->setResult($result);
+                            $bet->setBetDatetime(new \DateTime());
+
+                            $entityManager->persist($bet); //stocké en mémoire dans la collection de livres
+                            $entityManager->flush(); // synchronisation avec la BDD -> production d'un ordre SQL de type INSERT
+
+                        }
+                        $nbBet ++;
+                    }
+                    if($nbBet == 0){
+                        $bet = new Bet();
+                        $bet->setUser($user);
+                        $bet->setMatch($match);
+                        $bet->setResult($result);
+                        $bet->setBetDatetime(new \DateTime());
+
+                        $entityManager->persist($bet); //stocké en mémoire dans la collection de livres
+                        $entityManager->flush(); // synchronisation avec la BDD -> production d'un ordre SQL de type INSERT
+                    }
+                }
+                else{
+                    $this->addFlash('warning', 'Le match a déjà commencé !');
+                    return $this->redirectToRoute('paris');
+                }
+            }
+            else{
+                $this->addFlash('warning', 'Paris non valide !');
+                return $this->redirectToRoute('paris');
+            }
+        }
+        else{
+            return $this->redirectToRoute('login');
+        }
+        $this->addFlash('success', 'Le paris a bien été enregistré');
+        return $this->redirectToRoute('paris');
+    }
+    /*public function toBet($id,Request $request){
         $entityManager = $this->getDoctrine()->getManager();
         $match = $this->getDoctrine()->getRepository(Match::class)->find($id);
         $user = $this->getUser();
@@ -135,7 +200,7 @@ class BetController extends AbstractController
         }
         $this->addFlash('success', 'Le paris a bien été enregistré');
         return $this->redirectToRoute('paris');
-    }
+    }*/
     public function mesParis(){
         if($this->checkConnexion() != false){
             if($this->checkMyBets() != false){
