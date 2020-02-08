@@ -113,6 +113,7 @@ class BetController extends AbstractController
             if(isset($_POST['result']) OR $_POST['result'] >= 0 AND $_POST['result'] <= 2){
                 $result = $_POST['result'];
                 if($match->getDateTime() >= new \DateTime()){
+                    $i = 0;
                     if($this->checkMyBets() != false){
                         $myBets = $this->checkMyBets();
                         $nbBet = 0;
@@ -132,9 +133,9 @@ class BetController extends AbstractController
                             $entityManager->flush(); // synchronisation avec la BDD -> production d'un ordre SQL de type INSERT
 
                         }
-                        $nbBet ++;
+                        $i ++;
                     }
-                    if($nbBet == 0){
+                    if($i == 0){
                         $bet = new Bet();
                         $bet->setUser($user);
                         $bet->setMatch($match);
@@ -161,46 +162,6 @@ class BetController extends AbstractController
         $this->addFlash('success', 'Le paris a bien été enregistré');
         return $this->redirectToRoute('paris');
     }
-    /*public function toBet($id,Request $request){
-        $entityManager = $this->getDoctrine()->getManager();
-        $match = $this->getDoctrine()->getRepository(Match::class)->find($id);
-        $user = $this->getUser();
-        if($user != null){
-            if(isset($_POST['result']) AND $_POST['result'] >= 0 AND $_POST['result'] <= 2){
-                $result = $_POST['result'];
-                if($match->getDateTime() >= new \DateTime()){
-                    $myBets = $this->checkMyBets();
-                    if(!empty($myBets)){
-                        foreach($myBets as $myBet){
-                            if($myBet->getMatch()->getId() != $match->getId()){
-                                $bet = new Bet();
-                                $bet->setUser($user);
-                                $bet->setMatch($match);
-                                $bet->setResult($result);
-                                $bet->setBetDatetime(new \DateTime());
-
-                                $entityManager->persist($bet); //stocké en mémoire dans la collection de livres
-                                $entityManager->flush(); // synchronisation avec la BDD -> production d'un ordre SQL de type INSERT
-                            }
-                        }
-                    }
-                }
-                else{
-                    $this->addFlash('warning', 'Le match a déjà commencé !');
-                    return $this->redirectToRoute('paris');
-                }
-            }
-            else{
-                $this->addFlash('warning', 'Paris non valide !');
-                return $this->redirectToRoute('paris');
-            }
-        }
-        else{
-            return $this->redirectToRoute('login');
-        }
-        $this->addFlash('success', 'Le paris a bien été enregistré');
-        return $this->redirectToRoute('paris');
-    }*/
     public function mesParis(){
         if($this->checkConnexion() != false){
             if($this->checkMyBets() != false){
