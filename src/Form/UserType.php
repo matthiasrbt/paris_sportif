@@ -21,11 +21,8 @@ class UserType extends AbstractType
             ->add('name')
             ->add('email')
             ->add('username')
-            ->add('password', RepeatedType::class, array(
-                'type' => PasswordType::class,
-                'first_options'  => array('label' => 'Password'),
-                'second_options' => array('label' => 'Repeat Password'),
-            ))
+            ->add('password', PasswordType::class)
+            ->add('confirm_password', PasswordType::class)
             ->add('enregistrer',SubmitType::class);
     }
     public function configureOptions(OptionsResolver $resolver)

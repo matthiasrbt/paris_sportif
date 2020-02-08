@@ -11,6 +11,9 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @ORM\Table(name="utilisateur")
+ * @UniqueEntity(
+ *     fields= {"username"},
+ *     message= "Le nom d'utilisateur que vous avez indiqué est déjà utilisé !")
  */
 class User implements UserInterface
 {
@@ -25,14 +28,15 @@ class User implements UserInterface
      */
     private $username;
     /**
-     * @Assert\NotBlank()
-     * @Assert\Length(max=4096)
-     */
-    private $plainPassword;
-    /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Length(min="8", minMessage="Votre mot de passe doit faire au minimum 8 caractères")
      */
     private $password;
+    /**
+     *
+     * @Assert\EqualTo(propertyPath="password", message="Vos mots de passe doivent être identique")
+     */
+    public $confirm_password;
     /**
      * @ORM\Column(type="string", length=255)
      */
@@ -59,22 +63,6 @@ class User implements UserInterface
         $this->username = $username;
 
         return $this;
-    }
-    public function setPlainPassword($password)
-    {
-        $this->plainPassword = $password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
     }
 
     public function setEmail(string $email): self
@@ -191,8 +179,15 @@ class User implements UserInterface
         return $this->role;
     }
 
-    public function getPlainPassword()
+    public function setPassword(string $password): self
     {
-        return $this->plainPassword;
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
     }
 }
